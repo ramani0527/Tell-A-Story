@@ -47,3 +47,30 @@ def call_llm(prompt, temperature):
     #
     return "LLM response placeholder"
 
+from fastapi import FastAPI
+from pydantic import BaseModel
+from story_engine import call_llm
+
+app = FastAPI()
+
+class StartRequest(BaseModel):
+    title: str
+    genre: str
+    initial_hook: str
+    temperature: float
+
+@app.post("/start")
+def start_story(req: StartRequest):
+    prompt = f"""
+Write a strong opening paragraph (150–250 words) for a story titled "{req.title}".
+Genre: {req.genre}
+
+Use the following hook or setting as inspiration:
+{req.initial_hook}
+
+The paragraph should be immersive, descriptive, and set the tone for the story.
+"""
+
+    opening = call_llm(prompt, req.temperature)
+
+    return {"opening_paragraph": opening.strip()}
